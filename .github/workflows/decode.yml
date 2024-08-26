@@ -1,34 +1,35 @@
 name: Decode JavaScript File
 
 on:
-   workflow_dispatch:
+  workflow_dispatch:
+
 jobs:
   decode:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Execute Python script for decoding
-      run: |
-        python src/decode.py
+    - name: Install npm dependencies
+      run: npm install
 
-    - name: Install dependencies and run decode
-      run: |
-        npm install
-        npm run decode -- [-i input.js] [-o output.js]
+    - name: Run npm decode script
+      run: npm run decode -- [-i input.js] [-o output.js]
+
+    - name: Execute Python script for additional decoding
+      run: python src/decode.py
+
     - name: Configure Git author
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "action"
+
     - name: Save decoded output to repository
       run: |
         git status
-        ls
-        git add output.js
-        git add output.py
-        git commit -m "Add decoded output file"
+        git add output.js output.py
+        git diff --cached --exit-code || git commit -m "Add decoded output file"
         git push
-        
